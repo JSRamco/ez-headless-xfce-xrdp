@@ -1,8 +1,10 @@
 #!/bin/bash
-# Configure PAM for XRDP (skip prompt)
-echo "Configuring PAM for XRDP..."
+# Pre-configure PAM for XRDP
+echo "Pre-configuring PAM for XRDP..."
+sudo apt update
+sudo apt install -y debconf-utils  # Required for debconf-set-selections
 sudo debconf-set-selections <<EOF
-xrdp xrdp/use_pam_config boolean true
+xrdp	xrdp/use_pam	boolean	true
 EOF
 # Update and install required packages
 echo "Updating package list and installing XRDP, XFCE, Sakura, and Firefox..."
@@ -17,3 +19,4 @@ sudo systemctl restart xrdp
 # Display completion message
 echo "Setup complete! Connect via RDP to access your XFCE desktop."
 echo "You can manually launch Sakura and Firefox from the XFCE menu."
+
