@@ -1,4 +1,9 @@
 #!/bin/bash
+# Configure PAM for XRDP (skip prompt)
+echo "Configuring PAM for XRDP..."
+sudo debconf-set-selections <<EOF
+xrdp xrdp/use_pam_config boolean true
+EOF
 # Update and install required packages
 echo "Updating package list and installing XRDP, XFCE, Sakura, and Firefox..."
 sudo apt update
