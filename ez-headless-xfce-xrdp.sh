@@ -3,7 +3,7 @@
 echo "Updating package list and installing XRDP, XFCE, Sakura, and Firefox..."
 sudo apt update
 # Configure XRDP to use XFCE
-sudo DEBIAN_FRONTEND=noninteractive apt install -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" xrdp xfce4 sakura firefox-esr
+sudo DEBIAN_FRONTEND=noninteractive apt install -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" xrdp xfce4 sakura firefox-esr dbus-x11
 echo "Configuring XRDP to use XFCE..."
 sudo sed -i 's/^exec.*/exec startxfce4/' /etc/xrdp/startwm.sh
 # Restart XRDP service
