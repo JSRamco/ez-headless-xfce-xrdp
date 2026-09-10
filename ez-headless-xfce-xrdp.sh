@@ -1,20 +1,25 @@
 #!/bin/bash
 set -euo pipefail
+shopt -s nullglob
 
 CODENAME="$(. /etc/os-release && echo "$VERSION_CODENAME")"
 
-cp -a /etc/apt/sources.list "/etc/apt/sources.list.bak-$(date +%s)"
+SRCS=(/etc/apt/sources.list /etc/apt/sources.list.d/*.list /etc/apt/sources.list.d/*.sources)
 
-# Main pool -> archive.
+for f in "${SRCS[@]}"; do
+  cp -a "$f" "${f}.bak-$(date +%s)"
+done
+
+# Main pool -> archive
 sed -i -e 's|https\?://deb\.debian\.org/debian|https://archive.debian.org/debian|g' \
        -e 's|https\?://ftp\.[a-z]*\.debian\.org/debian|https://archive.debian.org/debian|g' \
-       /etc/apt/sources.list
+       "${SRCS[@]}"
 
-# Security and -updates do not exist on archive for this release. Kill both.
-sed -i -e 's|^\(deb.*security\.debian\.org.*\)$|# \1|' \
-       -e 's|^\(deb.*debian-security.*\)$|# \1|' \
-       -e "s|^\(deb.*${CODENAME}-updates.*\)$|# \1|" \
-       /etc/apt/sources.list
+# Security + -updates don't exist for this release anywhere. Comment them out.
+sed -i -e 's|^\([[:space:]]*deb.*security\.debian\.org.*\)$|# \1|' \
+       -e 's|^\([[:space:]]*deb.*debian-security.*\)$|# \1|' \
+       -e "s|^\([[:space:]]*deb.*${CODENAME}-updates.*\)$|# \1|" \
+       "${SRCS[@]}"
 
 echo 'Acquire::Check-Valid-Until "false";' > /etc/apt/apt.conf.d/99no-check-valid-until
 
@@ -22,8 +27,8 @@ rm -rf /var/lib/apt/lists/*
 apt-get update
 
 DEBIAN_FRONTEND=noninteractive apt-get install -y \
-    -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" \
-    xrdp xfce4 sakura firefox-esr dbus-x11
+  -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" \
+  xrdp xfce4 sakura firefox-esr dbus-x11
 
 sed -i 's|^exec .*Xsession.*|exec startxfce4|' /etc/xrdp/startwm.sh
 systemctl enable --now xrdp
